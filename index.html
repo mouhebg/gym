@@ -1064,7 +1064,7 @@ function dateFor(key){
 }
 const ui={open:{},prShown:{},dates:{},view:(()=>{ try{ return localStorage.getItem("weekly-gym-plan-v1-view")||"photo"; }catch(e){ return "photo"; } })()};
 /* Exercise photos: Free Exercise DB (public domain, Unlicense). Index 0 is the start position unless reversed. */
-const PH={rdl:{rev:1},plank:{single:1},carry:{labs:["Pick up","Walk"]},lunge:{labs:["Start","Step back"]}};
+const PH={rdl:{rev:1},plank:{single:1},carry:{single:1},lunge:{labs:["Start","Step back"]}};
 /* Real-motion clips from Wikimedia Commons (CC licensed; credit shown on each clip). */
 const VID={"squat": {"by": "FitnessScape", "lic": "CC BY 3.0", "page": "https://commons.wikimedia.org/wiki/File:Squat_-_exercise_demonstration_video.webm", "tall": false}, "bench": {"by": "Mixkit", "lic": "Free licence", "page": "https://mixkit.co/free-stock-video/man-doing-bench-press-at-the-gym-100543/"}};
 function photoHtml(ex){ return VID[ex.id]?videoHtml(ex):photoHtmlImgs(ex); }
