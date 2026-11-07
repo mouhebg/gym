@@ -1,3 +1,4 @@
+/** @OnlyCurrentDoc */
 /**
  * Weekly Gym Plan – your log, stored in this Google Sheet.
  *
