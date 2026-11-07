@@ -30,6 +30,7 @@ function doPost(e) {
     }
     if (body.action === "set") {
       if (!body.id || typeof body.data !== "object") throw new Error("Missing id or data");
+      if (body.names && typeof body.names === "object") PropertiesService.getScriptProperties().setProperty("names", JSON.stringify(body.names));
       write_(String(body.id), body.data);
       rebuild_();
       return json_({ ok: true });
@@ -96,13 +97,15 @@ function weekday_(d) {
 function rebuild_() {
   const docs = {};
   rows_().forEach(function (r) { if (r[0]) { try { docs[r[0]] = JSON.parse(r[1]); } catch (e) {} } });
+  let names = {};
+  try { names = JSON.parse(PropertiesService.getScriptProperties().getProperty("names") || "{}"); } catch (e) {}
   const sets = [["Date", "Day", "Workout", "Exercise", "Set", "Weight (kg)", "Reps / sec", "Unit", "Volume (kg)", "Note"]];
   Object.keys(docs).filter(function (k) { return docs[k] && docs[k].type === "session"; })
     .sort(function (a, b) { return docs[a].date < docs[b].date ? -1 : docs[a].date > docs[b].date ? 1 : 0; })
     .forEach(function (k) {
       const s = docs[k];
       Object.keys(s.sets || {}).forEach(function (id) {
-        const ex = EX[id]; if (!ex) return;
+        const ex = names[id] || EX[id] || { n: id, u: "reps", h: false };
         let n = 0;
         (s.sets[id] || []).forEach(function (x) {
           if (!x || !x.done) return; n++;

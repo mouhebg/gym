@@ -1,6 +1,6 @@
 // Offline support: the app and its photos/videos are kept on the phone, so it opens in the gym without signal.
 // Your log itself always goes to your Google Sheet (never cached here).
-const VERSION="gym-v2";
+const VERSION="gym-v3";
 const ASSETS=[
 "./",
 "index.html",
@@ -22,6 +22,8 @@ const ASSETS=[
 "img/deadbug-0.webp",
 "img/deadbug-1.webp",
 "img/face-0.webp",
+"img/fly-0.webp",
+"img/fly-1.webp",
 "img/face-1.webp",
 "img/goblet-0.webp",
 "img/goblet-1.webp",
