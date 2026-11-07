@@ -248,6 +248,7 @@ figcaption .mus::before{content:"";width:6px;height:6px;border-radius:50%;backgr
 .spin{width:30px;height:30px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ok);animation:spin .8s linear infinite;margin-bottom:6px}@keyframes spin{to{transform:rotate(360deg)}}
 .alldone{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin:12px 0 2px;padding:13px 16px;border:0;border-radius:12px;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok);font:700 .98rem var(--body);cursor:pointer;touch-action:manipulation}
 .alldone svg{width:22px;height:22px;flex:none}.alldone:active{transform:scale(.98)}
+.setuptxt{width:100%;box-sizing:border-box;font:500 .78rem var(--mono);padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--well);color:var(--ink);margin-top:6px}
 .connect{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.55)}
 .connect-card{width:100%;max-width:440px;background:var(--panel);color:var(--ink);border-radius:20px;padding:22px;display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .connect-card h2{margin:0;font:800 1.35rem var(--display)}.connect-card p{margin:0;line-height:1.45}.connect-card code{font:500 .8em var(--mono);word-break:break-all}
@@ -1790,6 +1791,7 @@ function renderProgress(v){
   <div class="block sheetbox"><h3>Your Google Sheet</h3>
     <p class="note">Every set you tick and every check-in is saved in your own Google Sheet. The <b>Sets</b> and <b>Check-ins</b> tabs are the readable copy; leave the <b>Data</b> tab alone, it’s what this app reads.</p>
     <div class="row">${sheetLink()?`<a class="btn" href="${esc(sheetLink())}" target="_blank" rel="noopener">Open my sheet</a>`:""}<button type="button" class="btn ghost" id="sheetgo">${getConn()?"Change connection":"Connect"}</button></div>
+    ${getConn()?`<div class="row"><button type="button" class="btn ghost" id="setuplink">Copy my setup link</button></div><p class="note">Open this link on a new phone or computer and it connects in one tap, with nothing to paste. Keep it private: anyone with it can read and change your log.</p><p class="st" id="setupst"></p>`:""}
     <p class="st" data-s="${st.mode==="remote"?"ok":"err"}">${st.mode==="remote"?"Connected":"Not connected: this phone only"}</p></div>
   <p class="note">${st.mode==="remote"?"Your log is in your Google Sheet, so it follows you to any phone or computer where you connect this app.":"This copy saves on this phone only until you connect your Google Sheet."}</p>`;
   v.querySelectorAll("#p-h,#p-a").forEach(inp=>{ let to; inp.addEventListener("change",()=>{ clearTimeout(to); to=setTimeout(()=>{ put("profile",Object.assign({},profile(),{type:"profile",height:num($("#p-h").value),age:num($("#p-a").value)})); render(); },300); }); });
@@ -1797,6 +1799,9 @@ function renderProgress(v){
   $("#sp-ex").addEventListener("change",(e)=>{ ui.spEx=e.target.value; render(); requestAnimationFrame(()=>{ const el=$("#strength"); if(el) el.scrollIntoView({block:"start"}); }); });
   v.querySelectorAll("tr[data-ex]").forEach(tr=>tr.addEventListener("click",()=>{ ui.spEx=tr.dataset.ex; render(); requestAnimationFrame(()=>{ const el=$("#strength"); if(el) el.scrollIntoView({block:"start"}); }); }));
   $("#sheetgo").addEventListener("click",openConnect);
+  { const b=document.getElementById("setuplink"); if(b) b.addEventListener("click",async()=>{ const link=location.origin+location.pathname+"#connect="+encodeURIComponent(getConn()); const out=document.getElementById("setupst");
+      try{ await navigator.clipboard.writeText(link); out.textContent="Copied. Paste it into a note or an email to yourself."; }
+      catch(e){ out.innerHTML=""; const t=document.createElement("textarea"); t.value=link; t.readOnly=true; t.rows=3; t.className="setuptxt"; out.appendChild(t); t.focus(); t.select(); } }); }
   $("#ciform").addEventListener("submit",(e)=>{
     e.preventDefault();
     const date=$("#ci-date").value, w=num($("#ci-w").value), wa=num($("#ci-waist").value), bf=num($("#ci-bf").value);
@@ -1824,6 +1829,16 @@ function bmrOf(W,H,A,bf){ return bf!=null ? 370+21.6*W*(1-bf/100) : 10*W+6.25*H-
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ readInk(); render(); });
 new MutationObserver(()=>{ readInk(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 (()=>{ const b=document.createElement("div"); b.id="syncbar"; b.className="syncbar"; b.hidden=true; b.setAttribute("role","alert"); b.innerHTML='<span></span><button type="button">'+(getConn()?"Reconnect":"Connect")+'</button>'; document.body.appendChild(b); b.querySelector("button").addEventListener("click",reconnect); })();
+/* One-tap setup link: …/gym/#connect=<Web app URL> connects this device, then the link is wiped from the address bar. */
+function takeSetupLink(){
+  const h=location.hash; if(!h.startsWith("#connect=")) return false;
+  let u=""; try{ u=decodeURIComponent(h.slice(9)); }catch(e){}
+  try{ history.replaceState(null,"",location.pathname+"#mon"); }catch(e){ location.hash="mon"; }
+  if(/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)){ try{ localStorage.setItem(CONN_KEY,u); }catch(e){} return true; }
+  return false;
+}
+window.addEventListener("hashchange",()=>{ if(takeSetupLink()) location.reload(); });
+takeSetupLink();
 readInk(); render(); initStore();
 window.__gym={DAYS,drawFigure,readInk,stateAt};
 })();
